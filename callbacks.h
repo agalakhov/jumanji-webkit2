@@ -33,22 +33,13 @@ void cb_girara_buffer_changed(girara_session_t* session);
 void cb_jumanji_tab_destroy(GObject* object, jumanji_tab_t* tab);
 
 /**
- * Executed when the page loaded. Saves the page in the history
- *
- * @param web_view Webkit web view
- * @param frame Webkit frame
- * @param data Custom data
- */
-void cb_jumanji_tab_load_finished(WebKitWebView* web_view, WebKitWebFrame* frame, gpointer data);
-
-/**
  * Update the title of the tab if status changes
  *
  * @param web_view Webkit web view
  * @param pspec -
  * @param data Custom data
  */
-void cb_jumanji_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec, gpointer data);
+void cb_jumanji_tab_load_changed(WebKitWebView* web_view, WebKitLoadEvent load_event, jumanji_tab_t* tab);
 
 /**
  * Updates the statusbar entry
@@ -78,7 +69,9 @@ void cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, 
  * @param link The uri the link points to
  * @param tab The jumanji tab
  */
-void cb_jumanji_tab_hovering_over_link(WebKitWebView* web_view, char* title, char* link, jumanji_tab_t* tab);
+void cb_jumanji_tab_mouse_target_changed(WebKitWebView* web_view,
+    WebKitHitTestResult* hit_test_result, guint modifiers,
+    jumanji_tab_t* tab);
 
 /**
  * Inspect web view
@@ -88,33 +81,7 @@ void cb_jumanji_tab_hovering_over_link(WebKitWebView* web_view, char* title, cha
  * @param data Custom data
  * @return webkit web view or NULL if an error occured
  */
-WebKitWebView* cb_jumanji_tab_web_inspector(WebKitWebInspector* inspector, WebKitWebView* web_view, gpointer data);
-
-/**
- * Download request
- *
- * @param web_view The web view
- * @param download The download object
- * @param tab The jumanji tab
- * @return true if download request is handled
- */
-bool cb_jumanji_tab_download_requested(WebKitWebView* web_view, WebKitDownload* download, jumanji_tab_t* tab);
-
-/**
- * Handles new window policies
- *
- * @param web_view The web view
- * @param frame The frame
- * @param request Request
- * @param action The navigation action
- * @param decision Policy Decision
- * @param tab Jumanji tab
- * @return true if request is handled
- */
-bool
-cb_new_jumanji_tab_new_window_policy_decision_requested(WebKitWebView* web_view,
-    WebKitWebFrame* frame, WebKitNetworkRequest* request, WebKitWebNavigationAction* action,
-    WebKitWebPolicyDecision* decision, jumanji_tab_t* tab);
+//WebKitWebView* cb_jumanji_tab_web_inspector(WebKitWebInspector* inspector, WebKitWebView* web_view, gpointer data);
 
 /**
  * Download the file if webkit is not able to display it
@@ -127,24 +94,8 @@ cb_new_jumanji_tab_new_window_policy_decision_requested(WebKitWebView* web_view,
  * @param tab Jumanji tab
  * @return true if request is handled
  */
-bool cb_jumanji_tab_mime_type_policy_decision_requested(WebKitWebView* web_view,
-    WebKitWebFrame* frame, WebKitNetworkRequest* request, char* mimetype,
-    WebKitWebPolicyDecision* decision, jumanji_tab_t* tab);
-
-/**
- * Navigation policy requested
- *
- * @param web_view The web view
- * @param frame The frame
- * @param request Request
- * @param action Action
- * @param decision Decision
- * @param tab Jumanji tab
- * @return true if request is handled
- */
-bool cb_jumanji_tab_navigation_policy_decision_requested(WebKitWebView*
-    web_view, WebKitWebFrame* frame, WebKitNetworkRequest* request,
-    WebKitWebNavigationAction* action, WebKitWebPolicyDecision* decision,
+bool cb_jumanji_tab_decide_policy(WebKitWebView* web_view,
+    WebKitPolicyDecision* decision, WebKitPolicyDecisionType decision_type,
     jumanji_tab_t* tab);
 
 /**

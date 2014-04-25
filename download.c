@@ -9,6 +9,7 @@
 #include <girara/session.h>
 #include <girara/datastructures.h>
 
+#if 0
 bool
 jumanji_download_file(jumanji_t* jumanji, WebKitDownload* download)
 {
@@ -126,6 +127,7 @@ jumanji_download_file(jumanji_t* jumanji, WebKitDownload* download)
 
   return true;
 }
+#endif
 
 void
 jumanji_download_free(void* data)
@@ -144,6 +146,7 @@ jumanji_download_free(void* data)
   free(download);
 }
 
+#if 0
 void
 cb_jumanji_download_status(WebKitDownload* download, GParamSpec* pspec, jumanji_download_t* jumanji_download)
 {
@@ -259,3 +262,4 @@ jumanji_download_set_status(jumanji_download_t* download)
   g_free(text);
   g_free(percent_text);
 }
+#endif

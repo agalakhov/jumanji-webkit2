@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <webkit/webkit.h>
+#include <webkit2/webkit2.h>
+#include <webkitdom/webkitdom.h>
 
 #include "hints.h"
 #include <girara/session.h>
@@ -91,7 +92,7 @@ hints_show(jumanji_t* jumanji, jumanji_tab_t* tab)
   hints_clear(jumanji);
 
   WebKitWebView *web_view         = WEBKIT_WEB_VIEW(tab->web_view);
-  WebKitDOMDocument *dom_document = webkit_web_view_get_dom_document(web_view);
+  WebKitDOMDocument *dom_document = NULL;//webkit_web_view_get_dom_document(web_view);
 
   if (dom_document == NULL) {
     return;
@@ -326,7 +327,7 @@ hints_process(jumanji_t* jumanji, guint n)
     return false;
   }
 
-  WebKitDOMDocument *dom_document = webkit_web_view_get_dom_document(WEBKIT_WEB_VIEW(tab->web_view));
+  WebKitDOMDocument *dom_document = NULL;//webkit_web_view_get_dom_document(WEBKIT_WEB_VIEW(tab->web_view));
 
   if (dom_document == NULL) {
     return false;

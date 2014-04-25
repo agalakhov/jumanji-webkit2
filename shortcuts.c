@@ -326,8 +326,8 @@ sc_search(girara_session_t* session, girara_argument_t* argument, girara_event_t
   }
 
   gboolean direction = (argument->n == BACKWARDS) ? FALSE : TRUE;
-  webkit_web_view_search_text(WEBKIT_WEB_VIEW(tab->web_view),
-      jumanji->search.item, FALSE, direction, TRUE);
+ // webkit_web_view_search_text(WEBKIT_WEB_VIEW(tab->web_view),
+ //     jumanji->search.item, FALSE, direction, TRUE);
 
   return true;
 }
@@ -446,11 +446,11 @@ sc_toggle_source_mode(girara_session_t* session, girara_argument_t* argument, gi
 
   char* url = (char*) webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
 
-  if(webkit_web_view_get_view_source_mode(WEBKIT_WEB_VIEW(tab->web_view))) {
-    webkit_web_view_set_view_source_mode(WEBKIT_WEB_VIEW(tab->web_view), FALSE);
-  } else {
-    webkit_web_view_set_view_source_mode(WEBKIT_WEB_VIEW(tab->web_view), TRUE);
-  }
+//  if(webkit_web_view_get_view_source_mode(WEBKIT_WEB_VIEW(tab->web_view))) {
+//    webkit_web_view_set_view_source_mode(WEBKIT_WEB_VIEW(tab->web_view), FALSE);
+//  } else {
+//    webkit_web_view_set_view_source_mode(WEBKIT_WEB_VIEW(tab->web_view), TRUE);
+//  }
 
   jumanji_tab_load_url(tab, url);
 

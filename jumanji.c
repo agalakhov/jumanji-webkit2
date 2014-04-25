@@ -141,7 +141,12 @@ jumanji_init(int argc, char* argv[])
   g_free(adblock_filter_dir);
 
   /* webkit */
-  jumanji->global.browser_settings = webkit_web_settings_new();
+  WebKitWebContext* webctx = webkit_web_context_get_default();
+  webkit_web_context_set_process_model(webctx, WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
+  webkit_web_context_set_cache_model(webctx, WEBKIT_CACHE_MODEL_WEB_BROWSER);
+
+
+  jumanji->global.browser_settings = webkit_settings_new();
   if (jumanji->global.browser_settings == NULL) {
     goto error_free;
   }
@@ -416,12 +421,12 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool focus)
   gtk_widget_show_all(tab->scrolled_window);
 
   /* apply browser setting */
-  webkit_web_view_set_settings(WEBKIT_WEB_VIEW(tab->web_view), webkit_web_settings_copy(jumanji->global.browser_settings));
+//  webkit_web_view_set_settings(WEBKIT_WEB_VIEW(tab->web_view), webkit_settings_copy(jumanji->global.browser_settings));
 
   /* set web inspector */
   WebKitWebInspector* web_inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(tab->web_view));
   if (web_inspector != NULL) {
-    g_signal_connect(G_OBJECT(web_inspector), "inspect-web-view", G_CALLBACK(cb_jumanji_tab_web_inspector), tab);
+//    g_signal_connect(G_OBJECT(web_inspector), "inspect-web-view", G_CALLBACK(cb_jumanji_tab_web_inspector), tab);
   }
 
   /* load url */
@@ -441,24 +446,12 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool focus)
   /* connect signals */
   g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy", G_CALLBACK(cb_jumanji_tab_destroy), tab);
 
-  g_signal_connect(G_OBJECT(tab->web_view), "hovering-over-link",
-      G_CALLBACK(cb_jumanji_tab_hovering_over_link), tab);
-  g_signal_connect(G_OBJECT(tab->web_view), "notify::load-status",
-      G_CALLBACK(cb_jumanji_tab_load_status), tab);
-  g_signal_connect(G_OBJECT(tab->web_view), "load-finished",
-      G_CALLBACK(cb_jumanji_tab_load_finished), tab);
-  g_signal_connect(G_OBJECT(tab->web_view), "download-requested",
-      G_CALLBACK(cb_jumanji_tab_download_requested), tab);
-  g_signal_connect(G_OBJECT(tab->web_view), "mime-type-policy-decision-requested",
-      G_CALLBACK(cb_jumanji_tab_mime_type_policy_decision_requested), tab);
-  g_signal_connect(G_OBJECT(tab->web_view), "new-window-policy-decision-requested",
-      G_CALLBACK(cb_new_jumanji_tab_new_window_policy_decision_requested), tab);
-
-  g_signal_connect(
-      G_OBJECT(tab->web_view),
-      "navigation-policy-decision-requested",
-      G_CALLBACK(cb_jumanji_tab_navigation_policy_decision_requested),
-      tab);
+  g_signal_connect(G_OBJECT(tab->web_view), "mouse-target-changed",
+      G_CALLBACK(cb_jumanji_tab_mouse_target_changed), tab);
+  g_signal_connect(G_OBJECT(tab->web_view), "load-changed",
+      G_CALLBACK(cb_jumanji_tab_load_changed), tab);
+  g_signal_connect(G_OBJECT(tab->web_view), "decide-policy",
+      G_CALLBACK(cb_jumanji_tab_decide_policy), tab);
 
   /* setup userscripts */
   user_script_init_tab(tab, jumanji->global.user_scripts);
@@ -541,13 +534,13 @@ jumanji_tab_show_search_results(jumanji_tab_t* tab)
     return;
   }
 
-  webkit_web_view_unmark_text_matches(WEBKIT_WEB_VIEW(tab->web_view));
+  //webkit_web_view_unmark_text_matches(WEBKIT_WEB_VIEW(tab->web_view));
 
   if (tab->jumanji != NULL && tab->jumanji->search.item != NULL) {
-    webkit_web_view_mark_text_matches(WEBKIT_WEB_VIEW(tab->web_view),
-        tab->jumanji->search.item, FALSE, 0);
-    webkit_web_view_set_highlight_text_matches(WEBKIT_WEB_VIEW(tab->web_view),
-        TRUE);
+    //webkit_web_view_mark_text_matches(WEBKIT_WEB_VIEW(tab->web_view),
+    //    tab->jumanji->search.item, FALSE, 0);
+    //webkit_web_view_set_highlight_text_matches(WEBKIT_WEB_VIEW(tab->web_view),
+    //    TRUE);
   }
 }
 

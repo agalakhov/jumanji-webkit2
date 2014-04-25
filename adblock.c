@@ -6,7 +6,6 @@
 #include <girara/utils.h>
 
 #include "adblock.h"
-
 girara_list_t*
 adblock_filter_load_dir(const char* path)
 {
@@ -33,13 +32,13 @@ adblock_filter_load_dir(const char* path)
     char* filepath = g_build_filename(path, file, NULL);
 
     if (g_file_test(filepath, G_FILE_TEST_IS_REGULAR) == TRUE) {
-      adblock_filter_t* filter = adblock_filter_load(filepath);
-      if (filter != NULL) {
-        girara_list_append(list, filter);
-        girara_info("[adblock] loaded filter: %s", filter->name ? filter->name : filepath);
-      } else {
+//      adblock_filter_t* filter = adblock_filter_load(filepath);
+//      if (filter != NULL) {
+//        girara_list_append(list, filter);
+//        girara_info("[adblock] loaded filter: %s", filter->name ? filter->name : filepath);
+//      } else {
         girara_error("[adblock] could not load filter: %s", filepath);
-      }
+//      }
     }
 
     g_free(filepath);
@@ -50,6 +49,7 @@ adblock_filter_load_dir(const char* path)
   return list;
 }
 
+#if 0
 adblock_filter_t*
 adblock_filter_load(const char* path)
 {
@@ -115,6 +115,7 @@ adblock_filter_load(const char* path)
   return filter;
 }
 
+#endif
 void
 adblock_filter_free(void* data)
 {
@@ -151,12 +152,13 @@ adblock_filter_init_tab(jumanji_tab_t* tab, girara_list_t* adblock_filters)
     return;
   }
 
-  g_signal_connect(G_OBJECT(tab->web_view), "resource-request-starting",
-      G_CALLBACK(cb_adblock_filter_resource_request_starting), adblock_filters);
-  g_signal_connect(G_OBJECT(tab->web_view), "window-object-cleared",
-      G_CALLBACK(cb_adblock_tab_window_object_cleared), adblock_filters);
+//  g_signal_connect(G_OBJECT(tab->web_view), "resource-request-starting",
+//      G_CALLBACK(cb_adblock_filter_resource_request_starting), adblock_filters);
+//  g_signal_connect(G_OBJECT(tab->web_view), "window-object-cleared",
+//      G_CALLBACK(cb_adblock_tab_window_object_cleared), adblock_filters);
 }
 
+#if 0
 void
 cb_adblock_tab_window_object_cleared(WebKitWebView* web_view, WebKitWebFrame* frame,
     gpointer context, gpointer window_object, girara_list_t* adblock_filters)
@@ -445,3 +447,4 @@ adblock_rule_evaluate(adblock_rule_t* rule, const char* uri)
 
   return match;
 }
+#endif

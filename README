@@ -6,8 +6,7 @@ on the libwebkit web content engine and the gtk+ toolkit.
 Requirements
 ------------
 gtk3 (>= 3.0.11)
-libwebkit3 (>= 1.4.1)
-libsoup (>= 2.42)
+libwebkit2-3 (>= 1.4.1)
 girara-gtk3
 
 Please note that you need to have a working pkg-config installation

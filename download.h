@@ -3,7 +3,7 @@
 #ifndef DOWNLOAD_H
 #define DOWNLOAD_H
 
-#include <webkit/webkit.h>
+#include <webkit2/webkit2.h>
 
 #include "jumanji.h"
 

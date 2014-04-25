@@ -3,13 +3,14 @@
 #include <stdlib.h>
 #include <girara/girara.h>
 
-#include <libsoup/soup.h>
+#include <webkit2/webkit2.h>
 
 #include "soup.h"
 
 struct jumanji_soup_s
 {
-  SoupSession* session; /*>> Soup session */
+  WebKitWebContext* web_context;
+  WebKitCookieManager* cookie_manager;
 };
 
 jumanji_soup_t*
@@ -24,9 +25,14 @@ jumanji_soup_init(jumanji_t* jumanji)
     return NULL;
   }
 
-  /* libsoup */
-  soup->session = webkit_get_default_session();
-  if (soup->session == NULL) {
+  soup->web_context= webkit_web_context_get_default();
+  if (soup->web_context == NULL) {
+    free(soup);
+    return NULL;
+  }
+
+  soup->cookie_manager = webkit_web_context_get_cookie_manager(soup->web_context);
+  if (soup->cookie_manager == NULL) {
     free(soup);
     return NULL;
   }
@@ -38,15 +44,10 @@ jumanji_soup_init(jumanji_t* jumanji)
     return NULL;
   }
 
-  SoupCookieJar* cookie_jar = soup_cookie_jar_text_new(cookie_file, FALSE);
-  if (cookie_jar == NULL) {
-    g_free(cookie_file);
-    free(soup);
-    return NULL;
-  }
-  g_free(cookie_file);
+  webkit_cookie_manager_set_persistent_storage(soup->cookie_manager, cookie_file,
+      WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT);
 
-  soup_session_add_feature(soup->session, (SoupSessionFeature*) cookie_jar);
+  g_free(cookie_file);
 
   return soup;
 }
@@ -72,14 +73,14 @@ jumanji_proxy_set(jumanji_t* jumanji, jumanji_proxy_t* proxy)
 
   if (proxy != NULL && proxy->url != NULL) {
     SoupURI* soup_uri = soup_uri_new(proxy->url);
-    g_object_set(soup->session, "proxy-uri", soup_uri, NULL);
+    //g_object_set(soup->session, "proxy-uri", soup_uri, NULL);
     soup_uri_free(soup_uri);
     jumanji->global.current_proxy = proxy;
 
     char* text = (proxy->description != NULL) ? proxy->description : proxy->url;
     girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.proxy, text);
   } else {
-    g_object_set(soup->session, "proxy-uri", NULL, NULL);
+    //g_object_set(soup->session, "proxy-uri", NULL, NULL);
     jumanji->global.current_proxy = NULL;
 
     girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.proxy, "Proxy disabled");

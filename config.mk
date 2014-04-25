@@ -11,8 +11,8 @@ MANPREFIX ?= ${PREFIX}/share/man
 GTK_INC ?= $(shell pkg-config --cflags gtk+-3.0)
 GTK_LIB ?= $(shell pkg-config --libs   gtk+-3.0)
 
-WEBKIT_INC ?= $(shell pkg-config --cflags webkitgtk-3.0)
-WEBKIT_LIB ?= $(shell pkg-config --libs   webkitgtk-3.0 javascriptcoregtk-3.0)
+WEBKIT_INC ?= $(shell pkg-config --cflags webkit2gtk-3.0)
+WEBKIT_LIB ?= $(shell pkg-config --libs   webkit2gtk-3.0 javascriptcoregtk-3.0)
 
 GIRARA_INC ?= $(shell pkg-config --cflags girara-gtk3)
 GIRARA_LIB ?= $(shell pkg-config --libs girara-gtk3)

@@ -309,6 +309,7 @@ user_script_inject(WebKitWebView* web_view, user_script_t* user_script)
 void
 user_script_inject_text(WebKitWebView* web_view, const char* text)
 {
+#if 0
   if (web_view == NULL || text == NULL) {
     return;
   }
@@ -339,6 +340,7 @@ user_script_inject_text(WebKitWebView* web_view, const char* text)
 
   JSEvaluateScript(context, script, object, NULL, 0, NULL);
   JSStringRelease(script);
+#endif
 }
 
 void
@@ -356,6 +358,7 @@ void
 cb_user_script_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec,
     girara_list_t* user_scripts)
 {
+#if 0
   if (web_view == NULL || user_scripts == NULL ||
       girara_list_size(user_scripts) == 0) {
     return;
@@ -437,4 +440,5 @@ cb_user_script_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec,
     }
   } while (girara_list_iterator_next(iter));
   girara_list_iterator_free(iter);
+#endif
 }

@@ -59,37 +59,25 @@ cb_jumanji_tab_destroy(GObject* object, jumanji_tab_t* tab)
 }
 
 void
-cb_jumanji_tab_load_finished(WebKitWebView* web_view, WebKitWebFrame* frame, gpointer data)
+cb_jumanji_tab_load_changed(WebKitWebView* web_view, WebKitLoadEvent load_event, jumanji_tab_t* tab)
 {
-  jumanji_tab_t* tab = (jumanji_tab_t*) data;
-
-  if (web_view == NULL || tab == NULL || tab->jumanji == NULL || tab->jumanji->database == NULL
-      || tab->jumanji->ui.session == NULL) {
-    return;
-  }
-
-  bool enable_private_browsing = true;
-  girara_setting_get(tab->jumanji->ui.session, "enable-private-browsing", &enable_private_browsing);
-  if (enable_private_browsing == false) {
-    const gchar* url   = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
-    const gchar* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
-
-    jumanji_db_history_add(tab->jumanji->database, url, title);
-  }
-}
-
-void
-cb_jumanji_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec, gpointer data)
-{
-  jumanji_tab_t* tab = (jumanji_tab_t*) data;
-
   if (web_view == NULL || tab == NULL || tab->jumanji == NULL || tab->jumanji->ui.session == NULL
       || tab->girara_tab == NULL) {
     return;
   }
 
-  unsigned int position = girara_tab_position_get(tab->jumanji->ui.session, tab->girara_tab) + 1;
+  const gchar* url   = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
   const gchar* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
+
+  if (load_event == WEBKIT_LOAD_FINISHED) {
+    bool enable_private_browsing = true;
+    girara_setting_get(tab->jumanji->ui.session, "enable-private-browsing", &enable_private_browsing);
+    if (enable_private_browsing == false) {
+      jumanji_db_history_add(tab->jumanji->database, url, title);
+    }
+  }
+
+  unsigned int position = girara_tab_position_get(tab->jumanji->ui.session, tab->girara_tab) + 1;
   title = title ? title : "Loading...";
 
   char* text = g_strdup_printf("%d | %s", position, title);
@@ -158,13 +146,16 @@ cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, juman
 }
 
 void
-cb_jumanji_tab_hovering_over_link(WebKitWebView* web_view, char* title, char* link, jumanji_tab_t* tab)
+cb_jumanji_tab_mouse_target_changed(WebKitWebView* web_view,
+    WebKitHitTestResult* hit_test_result, guint modifiers,
+    jumanji_tab_t* tab)
 {
   if (tab == NULL || tab->jumanji == NULL || tab->jumanji->ui.statusbar.url == NULL
       || tab->jumanji->ui.session == NULL) {
     return;
   }
 
+  const gchar* link = webkit_hit_test_result_get_link_uri(hit_test_result);
   if (link != NULL) {
     girara_statusbar_item_set_text(tab->jumanji->ui.session, tab->jumanji->ui.statusbar.url, link);
   } else {
@@ -199,84 +190,93 @@ cb_jumanji_tab_web_inspector(WebKitWebInspector* inspector, WebKitWebView* web_v
   return WEBKIT_WEB_VIEW(new_web_view);
 }
 
-bool
-cb_jumanji_tab_download_requested(WebKitWebView* web_view, WebKitDownload* download, jumanji_tab_t* tab)
-{
-  if (tab == NULL || tab->jumanji == NULL || download == NULL) {
-    return false;
-  }
+//bool
+//cb_jumanji_tab_download_requested(WebKitWebView* web_view, WebKitDownload* download, jumanji_tab_t* tab)
+//{
+//  if (tab == NULL || tab->jumanji == NULL || download == NULL) {
+//    return false;
+//  }
+//
+//  return jumanji_download_file(tab->jumanji, download);
+//}
 
-  return jumanji_download_file(tab->jumanji, download);
-}
-
-bool
-cb_new_jumanji_tab_new_window_policy_decision_requested(WebKitWebView* web_view,
-    WebKitWebFrame* frame, WebKitNetworkRequest* request, WebKitWebNavigationAction* action,
-    WebKitWebPolicyDecision* decision, jumanji_tab_t* tab)
-{
-  if (web_view == NULL || action == NULL) {
-    return false;
-  }
-
-  if (webkit_web_navigation_action_get_reason(action) ==
-      WEBKIT_WEB_NAVIGATION_REASON_LINK_CLICKED) {
-    bool focus_new_tabs;
-    girara_setting_get(tab->jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
-    webkit_web_policy_decision_ignore(decision);
-    jumanji_tab_new(tab->jumanji, webkit_network_request_get_uri(request), focus_new_tabs);
-
-    return true;
-  }
-
-  return false;
-}
-
-bool
-cb_jumanji_tab_mime_type_policy_decision_requested(WebKitWebView* web_view,
-    WebKitWebFrame* frame, WebKitNetworkRequest* request, char* mimetype,
-    WebKitWebPolicyDecision* decision, jumanji_tab_t* tab)
-{
-  if (web_view == NULL || mimetype == NULL) {
-    return false;
-  }
-
-  if (webkit_web_view_can_show_mime_type(web_view, mimetype) != TRUE) {
-    webkit_web_policy_decision_download(decision);
-    return true;
-  }
-
-  return false;
-}
-
-bool
-cb_jumanji_tab_navigation_policy_decision_requested(WebKitWebView* web_view,
-    WebKitWebFrame* frame, WebKitNetworkRequest* request,
-    WebKitWebNavigationAction* action, WebKitWebPolicyDecision* decision,
+static bool
+jumanji_tab_mime_policy(WebKitWebView* web_view,
+    WebKitResponsePolicyDecision* decision,
     jumanji_tab_t* tab)
 {
-  if (tab == NULL || tab->jumanji == NULL || action == NULL) {
+  WebKitURIResponse* response = webkit_response_policy_decision_get_response(decision);
+  const gchar* mimetype = webkit_uri_response_get_mime_type(response);
+
+  if (webkit_web_view_can_show_mime_type(web_view, mimetype) != TRUE) {
+    webkit_policy_decision_download(WEBKIT_POLICY_DECISION(decision));
+    return true;
+  }
+
+  return false;
+}
+
+static bool
+jumanji_tab_navigation_policy(WebKitWebView* web_view,
+    WebKitNavigationPolicyDecision* decision,
+    bool want_new_window,
+    jumanji_tab_t* tab)
+{
+  bool new_tab = false;
+
+  WebKitNavigationType navtype = webkit_navigation_policy_decision_get_navigation_type(decision);
+  switch (navtype) {
+    case WEBKIT_NAVIGATION_TYPE_LINK_CLICKED:
+      if (want_new_window) {
+        new_tab = true;
+      }
+      /* middle mouse button? */
+      if (webkit_navigation_policy_decision_get_mouse_button(decision) == 2) {
+        new_tab = true;
+      }
+      break;
+    default:
+      break;
+  }
+
+  WebKitURIRequest* request = webkit_navigation_policy_decision_get_request(decision);
+  const char* uri = webkit_uri_request_get_uri(request);
+  if (uri == NULL) {
     return false;
   }
 
-  int button      = webkit_web_navigation_action_get_button(action);
-  const char* uri = NULL;
-
-  switch(button) {
-    case 2: /* middle mouse button */
-      uri = webkit_network_request_get_uri(request);
-      if (uri == NULL) {
-        return false;
-      }
-
-      bool focus_new_tabs;
-      girara_setting_get(tab->jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
-      jumanji_tab_new(tab->jumanji, uri, focus_new_tabs);
-      webkit_web_policy_decision_ignore(decision);
-      return true;
-    default:
-      return false;
+  if (new_tab) {
+    bool focus_new_tabs;
+    girara_setting_get(tab->jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
+    jumanji_tab_new(tab->jumanji, uri, focus_new_tabs);
+    webkit_policy_decision_ignore(WEBKIT_POLICY_DECISION(decision));
+    return true;
   }
+  return false;
 }
+
+
+bool
+cb_jumanji_tab_decide_policy(WebKitWebView* web_view,
+    WebKitPolicyDecision* decision, WebKitPolicyDecisionType decision_type,
+    jumanji_tab_t* tab)
+{
+  if (web_view == NULL) {
+    return false;
+  }
+
+  switch(decision_type) {
+    case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
+      return jumanji_tab_navigation_policy(web_view, WEBKIT_NAVIGATION_POLICY_DECISION(decision), true, tab);
+    case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
+      return jumanji_tab_mime_policy(web_view, WEBKIT_RESPONSE_POLICY_DECISION(decision), tab);
+    case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
+      return jumanji_tab_navigation_policy(web_view, WEBKIT_NAVIGATION_POLICY_DECISION(decision), false, tab);
+  }
+
+  return false;
+}
+
 
 void
 cb_settings_webkit(girara_session_t* session, const char* name, girara_setting_type_t type, void* value, void* data)
@@ -286,7 +286,7 @@ cb_settings_webkit(girara_session_t* session, const char* name, girara_setting_t
   g_return_if_fail(session->global.data != NULL);
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
 
-  WebKitWebSettings* browser_settings = NULL;
+  WebKitSettings* browser_settings = NULL;
   jumanji_tab_t* tab                  = jumanji_tab_get_current(jumanji);
 
   /* get settings */

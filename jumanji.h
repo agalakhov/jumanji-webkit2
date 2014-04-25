@@ -7,7 +7,8 @@
 #include <girara/types.h>
 #include <gtk/gtk.h>
 
-#include <webkit/webkit.h>
+#include <webkit2/webkit2.h>
+#include <webkitdom/webkitdomdefines.h>
 
 enum { LEFT, RIGHT, UP, DOWN, FULL_UP, FULL_DOWN, HALF_UP, HALF_DOWN, TOP,
   BOTTOM, BEGIN, END, ZOOM_IN, ZOOM_OUT, DEFAULT, ZOOM_SPECIFIC, APPEND_URL,
@@ -50,7 +51,7 @@ typedef struct jumanji_s
 
   struct
   {
-    WebKitWebSettings* browser_settings; /*>> Browser settings */
+    WebKitSettings* browser_settings; /*>> Browser settings */
     gchar* user_stylesheet_uri;
     girara_list_t* search_engines; /**> Search engines */
     girara_list_t* proxies; /**> Proxies */
