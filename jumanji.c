@@ -22,12 +22,12 @@
 #include "soup.h"
 #include "session.h"
 
-#define GLOBAL_RC  "/etc/jumanjirc"
-#define JUMANJI_RC "jumanjirc"
-#define JUMANJI_BOOKMARKS_FILE "bookmarks"
-#define JUMANJI_HISTORY_FILE "history"
-#define JUMANJI_QUICKMARKS_FILE "quickmarks"
-#define JUMANJI_SESSION_DIR "sessions"
+#define GLOBAL_RC                    "/etc/jumanjirc"
+#define JUMANJI_RC                   "jumanjirc"
+#define JUMANJI_BOOKMARKS_FILE       "bookmarks"
+#define JUMANJI_HISTORY_FILE         "history"
+#define JUMANJI_QUICKMARKS_FILE      "quickmarks"
+#define JUMANJI_SESSION_DIR          "sessions"
 #define JUMANJI_DEFAULT_SESSION_FILE "default_session"
 
 jumanji_t*
@@ -444,7 +444,8 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool focus)
   }
 
   /* connect signals */
-  g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy", G_CALLBACK(cb_jumanji_tab_destroy), tab);
+  g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy",
+      G_CALLBACK(cb_jumanji_tab_destroy), tab);
 
   g_signal_connect(G_OBJECT(tab->web_view), "mouse-target-changed",
       G_CALLBACK(cb_jumanji_tab_mouse_target_changed), tab);
@@ -452,6 +453,11 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool focus)
       G_CALLBACK(cb_jumanji_tab_load_changed), tab);
   g_signal_connect(G_OBJECT(tab->web_view), "decide-policy",
       G_CALLBACK(cb_jumanji_tab_decide_policy), tab);
+  // TODO not implemented yet
+  //g_signal_connect(G_OBJECT(tab->web_view), "hovering-over-link",
+  //    G_CALLBACK(cb_jumanji_tab_hovering_over_link), tab);
+  //g_signal_connect(G_OBJECT(tab->web_view), "download-requested",
+  //    G_CALLBACK(cb_jumanji_tab_download_requested), tab);
 
   /* setup userscripts */
   user_script_init_tab(tab, jumanji->global.user_scripts);

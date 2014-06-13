@@ -99,7 +99,7 @@ bool cb_jumanji_tab_decide_policy(WebKitWebView* web_view,
     jumanji_tab_t* tab);
 
 /**
- * Called when a webkit settings has been changed
+ * Called when a webkit setting has been changed
  *
  * @param session The girara session
  * @param setting The girara setting
